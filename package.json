@@ -4,7 +4,7 @@
   "description": "ShopCore API - the core engine behind online commerce",
   "main": "index.js",
   "scripts": {
-    "test": "node --test tests",
+    "test": "node --test tests/*.test.js",
     "dev": "node --watch index.js",
     "start": "node index.js"
   },
