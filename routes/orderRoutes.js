@@ -1,6 +1,6 @@
 import express from 'express';
 import { createOrder, getMyOrders } from '../controllers/orderController.js';
-import protect from '../middleware/auth.js'; // Protects endpoints with your JWT security check
+import { protect } from '../middleware/auth.js'; // 🟢 Clean default import matching your file!
 
 const router = express.Router();
 

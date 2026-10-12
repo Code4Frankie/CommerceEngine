@@ -1,6 +1,6 @@
 import express from 'express';
 import { getCart, addToCart, updateCartQuantity, removeFromCart, clearCart } from '../controllers/cartController.js';
-import protect from '../middleware/auth.js'; // Protects endpoints with your team's security check
+import { protect } from '../middleware/auth.js'; // 🟢 Clean default import matching your file!
 
 const router = express.Router();
 
