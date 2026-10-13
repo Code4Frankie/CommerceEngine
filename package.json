@@ -37,5 +37,6 @@
   "bugs": {
     "url": "https://github.com/Code4Frankie/CommerceEngine/issues"
   },
-  "homepage": "https://github.com/Code4Frankie/CommerceEngine#readme"
+  "homepage": "https://github.com/Code4Frankie/CommerceEngine#readme",
+  "devDependencies": {}
 }
