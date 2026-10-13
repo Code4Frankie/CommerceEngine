@@ -1,20 +1,23 @@
-import "dotenv/config";
-import app from "./app.js";
-import { connectDB } from "./config/db.js";
+import { webcrypto } from 'node:crypto';
+globalThis.crypto ??= webcrypto; // Injects the missing crypto global for Node 18
 
-const PORT = process.env.PORT || 5001;
+import 'dotenv/config'; // fetches secret credentials from the .env file
+import app from './app.js'; 
+import connectDB from './config/db.js';
 
-async function startServer() {
-  try {
+const PORT = process.env.PORT || 5000; // Defines the port
+
+// no request will be accepted until there is a secure connection with database
+const start = async ()=> {
     await connectDB();
-
     app.listen(PORT, () => {
-      console.log(`ShopCore API running on port ${PORT}`);
-    });
-  } catch (error) {
-    console.error("Failed to start ShopCore API:", error.message);
-    process.exit(1);
-  }
-}
+        console.log(`🚀 ShopCore Engine is fully active at: http://localhost:${PORT}`);
+      });
+};
 
-startServer();
+start().catch((err) => {
+    console.error('Startup failed:', err.message);
+    process.exit(1); // exit so error can be displayed on the terminal
+});
+
+
