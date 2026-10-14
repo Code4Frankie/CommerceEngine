@@ -39,4 +39,7 @@
   },
   "homepage": "https://github.com/Code4Frankie/CommerceEngine#readme",
   "devDependencies": {}
+  "devDependencies": {
+    "supertest": "^7.3.1"
+  }
 }

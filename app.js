@@ -1,16 +1,13 @@
 import express from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
-import morgan from 'morgan';
-import authRoutes from './routes/authRoutes.js';
-import cartRoutes from './routes/cartRoutes.js';
-import orderRoutes from './routes/orderRoutes.js';
-import { apiLimiter } from './middleware/rateLimiter.js';
+import productRoutes from "./routes/productRoutes.js";
+import categoryRoutes from "./routes/categoryRoutes.js";
 
 const app = express();
 
-// Activate HTTP Shield Headers via Helmet
-app.use(helmet());
+// MIDDLEWARE: lets the app read JSON sent in request bodies (needed for register, login, products)
+app.use(express.json());
+app.use("/api/v1/products", productRoutes);
+app.use("/api/v1/categories", categoryRoutes);
 
 // HTTP Request Logger Framework Tracking 
 if (process.env.NODE_ENV !== 'production') {
