@@ -1,6 +1,6 @@
-
+// ShopCore API | routes/paymentRoutes.js
 // Role: /api/v1/payments. The webhook route is registered in app.js (it needs the raw body).
-// Stephanie Daniels (ST3)
+// Owner: Stephanie Daniels (ST3)
 import { Router } from 'express';
 import { body } from 'express-validator';
 import { initializePayment, verifyPayment } from '../controllers/paymentController.js';

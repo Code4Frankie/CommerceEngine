@@ -1,31 +1,19 @@
+// ShopCore API | models/cartModel.js
+// Role: Cart schema. One cart per user, holding product ids and quantities.
+// Owner: Aziz Olaide Kafayat (AZ1)
 import mongoose from 'mongoose';
 
-const cartItemSchema = new mongoose.Schema({
-  product: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Product',
-    required: [true, 'A cart item must be linked to a valid product item.']
+const cartSchema = new mongoose.Schema(
+  {
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, unique: true },
+    items: [
+      {
+        product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
+        quantity: { type: Number, required: true, min: 1, default: 1 },
+      },
+    ],
   },
-  quantity: {
-    type: Number,
-    required: [true, 'Quantity is mandatory.'],
-    min: [1, 'Quantity cannot drop below 1 unit.']
-  }
-});
+  { timestamps: true }
+);
 
-const cartSchema = new mongoose.Schema({
-  user: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: [true, 'A cart must belong to an active user.'],
-    unique: true // each customer gets exactly one unique cart tracking
-  },
-  items: [cartItemSchema]
-}, { 
-  timestamps: true // Tracks exactly when the cart was modified
-});
-
-const Cart = mongoose.model('Cart', cartSchema);
-
-
-export default Cart;
+export default mongoose.model('Cart', cartSchema);

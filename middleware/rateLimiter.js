@@ -1,5 +1,7 @@
-// middleware/rateLimiter.js
-import { rateLimit } from 'express-rate-limit';
+// ShopCore API | middleware/rateLimiter.js
+// Role: limits how often one IP can call the API. authLimiter is stricter, for login and register.
+// Owner: Abe Enoch (AB1)
+import rateLimit from 'express-rate-limit';
 
 export const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,

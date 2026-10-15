@@ -1,22 +1,14 @@
-import { body } from 'express-validator';
-import { validateRequest } from './authValidator.js'; // Imports your reusable error catcher
+// ShopCore API | validators/cartValidator.js
+// Role: input rules for cart routes.
+// Owner: Tunde Fadipe (TU2)
+import { body, param } from 'express-validator';
 
-export const addToCartValidator = [
-  body('productId')
-    .notEmpty().withMessage('Product ID is required to add an item to the cart.')
-    .isMongoId().withMessage('Invalid Product ID format. Must be a valid 24-character hex string.'),
-  
-  body('quantity')
-    .optional()
-    .isInt({ min: 1 }).withMessage('Quantity must be a whole number and at least 1.'),
-    
-  validateRequest // Express-validator checkpoint interceptor
+export const addItemRules = [
+  body('productId').isMongoId().withMessage('A valid product id is required'),
+  body('quantity').optional().isInt({ min: 1 }).withMessage('Quantity must be at least 1').toInt(),
 ];
-
-export const updateQuantityValidator = [
-  body('quantity')
-    .notEmpty().withMessage('Quantity value is required.')
-    .isInt({ min: 1 }).withMessage('Quantity must be a whole number and at least 1.'),
-    
-  validateRequest
+export const updateItemRules = [
+  param('productId').isMongoId().withMessage('A valid product id is required'),
+  body('quantity').isInt({ min: 1 }).withMessage('Quantity must be at least 1').toInt(),
 ];
+export const productIdParam = [param('productId').isMongoId().withMessage('A valid product id is required')];

@@ -1,3 +1,6 @@
+// ShopCore API | config/db.js
+// Role: connects Mongoose to MongoDB Atlas.
+// Owner: Aziz Olaide Kafayat (AZ2)
 import mongoose from 'mongoose';
 import dns from 'node:dns';
 
@@ -10,5 +13,4 @@ const connectDB = async () => {
   return conn;
 };
 
-// This line handles the default export your index.js file is looking for!
 export default connectDB;

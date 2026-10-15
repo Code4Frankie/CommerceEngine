@@ -1,17 +1,21 @@
 {
   "name": "shopcore-api",
   "version": "1.0.0",
-  "description": "ShopCore API - the core engine behind online commerce",
+  "description": "ShopCore API - the core engine behind online commerce for local businesses and products",
   "main": "index.js",
-  "scripts": {
-    "test": "node --test tests/*.test.js",
-    "dev": "node --watch index.js",
-    "start": "node index.js"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js",
+    "seed:admin": "node scripts/seedAdmin.js",
+    "seed:categories": "node scripts/seedCategories.js",
+    "postman": "node scripts/generatePostman.js",
+    "test": "node --test \"tests/*.test.js\""
+  },
+  "license": "ISC",
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "cloudinary": "^2.11.0",
