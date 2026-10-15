@@ -1,6 +1,6 @@
-
+// ShopCore API | services/paymentService.js
 // Role: talks to the payment gateway (Paystack) and checks webhook signatures.
-//  Stephanie Daniels (ST2, ST3)
+// Owner: Stephanie Daniels (ST2, ST3)
 import crypto from 'node:crypto';
 import { paymentConfig } from '../config/payment.js';
 import ApiError from '../utils/ApiError.js';
