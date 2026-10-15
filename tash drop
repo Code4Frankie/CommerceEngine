@@ -1,0 +1,19 @@
+[1mdiff --git a/utils/ApiError.js b/utils/ApiError.js[m
+[1mindex 02bf1c6..6a630a1 100644[m
+[1m--- a/utils/ApiError.js[m
+[1m+++ b/utils/ApiError.js[m
+[36m@@ -1,8 +1,11 @@[m
+ class ApiError extends Error {[m
+[31m-  constructor(statusCode, message) {[m
+[32m+[m[32m  constructor(statusCode, message, errors = []) {[m
+     super(message);[m
+     this.statusCode = statusCode;[m
+[32m+[m[32m    this.errors = errors;[m
+[32m+[m[32m    this.isOperational = true;[m
+[32m+[m[32m    Error.captureStackTrace(this, this.constructor);[m
+   }[m
+ }[m
+ [m
+[31m-export default ApiError;[m
+[32m+[m[32mexport default ApiError;[m
+\ No newline at end of file[m

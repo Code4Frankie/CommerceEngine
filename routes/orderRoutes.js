@@ -1,42 +1,20 @@
-import express from "express";
-import {
-  createOrder,
-  getMyOrders,
-  getOrderById,
-  cancelOrder,
-  getAllOrders,
-  updateOrderStatus,
-} from "../controllers/orderController.js";
-import {
-  validate,
-  createOrderRules,
-  orderIdRules,
-  updateStatusRules,
-  listOrdersRules,
-} from "../validators/orderValidator.js";
-import { protect, restrictTo } from "../middleware/auth.js";
+// ShopCore API | routes/orderRoutes.js
+// Role: /api/v1/orders. Customers place and view their orders; admins see all and update status.
+// Owner: Anthony Edike (AN2, AN3)
+import { Router } from 'express';
+import { createOrder, myOrders, getOrder, allOrders, updateStatus, cancelOrder } from '../controllers/orderController.js';
+import { orderRules, statusRules } from '../validators/orderValidator.js';
+import { validate, idParam } from '../middleware/validate.js';
+import { protect } from '../middleware/auth.js';
+import { restrictTo } from '../middleware/role.js';
 
-const router = express.Router();
-
-// Customer
-router.post("/", protect, createOrderRules, validate, createOrder);
-router.get("/my", protect, listOrdersRules, validate, getMyOrders);
-
-// Admin: static paths must come before "/:id")
-router.get("/", protect, restrictTo("admin"), listOrdersRules, validate, getAllOrders);
-
-// Owner or admin 
-router.get("/:id", protect, orderIdRules, validate, getOrderById);
-router.patch("/:id/cancel", protect, orderIdRules, validate, cancelOrder);
-
-// Admin
-router.patch(
-  "/:id/status",
-  protect,
-  restrictTo("admin"),
-  updateStatusRules,
-  validate,
-  updateOrderStatus
-);
+const router = Router();
+router.use(protect);
+router.post('/', orderRules, validate, createOrder);
+router.get('/mine', myOrders); // must stay above '/:id'
+router.get('/', restrictTo('admin'), allOrders);
+router.get('/:id', idParam, validate, getOrder);
+router.put('/:id/status', restrictTo('admin'), idParam, statusRules, validate, updateStatus);
+router.put('/:id/cancel', idParam, validate, cancelOrder);
 
 export default router;

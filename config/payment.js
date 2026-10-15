@@ -1,5 +1,6 @@
+// ShopCore API | config/payment.js
 // Role: payment gateway settings (written for Paystack; change the URLs if another gateway is chosen).
-// Stephanie Daniels (ST2)
+// Owner: Stephanie Daniels (ST2)
 export const paymentConfig = {
   secretKey: process.env.PAYMENT_SECRET_KEY,
   baseUrl: process.env.PAYMENT_BASE_URL || 'https://api.paystack.co',

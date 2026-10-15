@@ -1,31 +1,23 @@
-import { body, validationResult } from 'express-validator';
+// ShopCore API | validators/authValidator.js
+// Role: input rules for register, login and password routes.
+// Owner: Ogunsola Israel Oluwajomiloju (OG2)
+import { body } from 'express-validator';
 
-/**
- * Reusable error-catching middleware interceptor used across all validators
- */
-export const validateRequest = (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({
-      status: 'error',
-      errors: errors.array().map(err => ({
-        field: err.path,
-        message: err.msg
-      }))
-    });
-  }
-  next();
-};
+const password = (field = 'password') =>
+  body(field).isLength({ min: 8 }).withMessage('Password must be at least 8 characters');
 
-export const registerValidator = [
-  body('name').trim().notEmpty().withMessage('Account display name field is required.').isLength({ min: 2 }),
-  body('email').trim().notEmpty().withMessage('Email address mapping is mandatory.').isEmail().normalizeEmail(),
-  body('password').notEmpty().withMessage('Security access passkey is required.').isLength({ min: 6 }),
-  validateRequest
+export const registerRules = [
+  body('name').trim().notEmpty().withMessage('Name is required'),
+  body('email').isEmail().withMessage('A valid email is required').normalizeEmail(),
+  password(),
 ];
-
-export const loginValidator = [
-  body('email').trim().isEmail().normalizeEmail(),
-  body('password').notEmpty().withMessage('Password field cannot be blank.'),
-  validateRequest
+export const loginRules = [
+  body('email').isEmail().withMessage('A valid email is required').normalizeEmail(),
+  body('password').notEmpty().withMessage('Password is required'),
+];
+export const forgotPasswordRules = [body('email').isEmail().withMessage('A valid email is required').normalizeEmail()];
+export const resetPasswordRules = [password()];
+export const changePasswordRules = [
+  body('currentPassword').notEmpty().withMessage('Current password is required'),
+  password('newPassword'),
 ];

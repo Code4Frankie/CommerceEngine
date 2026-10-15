@@ -1,96 +1,104 @@
-import Order from '../models/orderModel.js';
+// ShopCore API | controllers/orderController.js
+// Role: turns the cart into an order (price snapshot, stock deduction), order history, and admin status updates.
+// Owner: Anthony Edike (AN2, AN3)
 import Cart from '../models/cartModel.js';
+import Order from '../models/orderModel.js';
 import Product from '../models/productModel.js';
 import ApiError from '../utils/ApiError.js';
 import asyncHandler from '../utils/asyncHandler.js';
+import { parsePagination, pageMeta } from '../utils/paginate.js';
 
-/**
- * @desc    Convert active shopping cart into a binding order & update store stock
- * @route   POST /api/v1/orders
- * @access  Private (Customer Only)
- */
+// Which status changes the admin may make from each status
+const NEXT = { pending: ['cancelled'], paid: ['shipped', 'cancelled'], shipped: ['delivered'], delivered: [], cancelled: [] };
 
-export const createOrder = asyncHandler(async (req, res, next) => {
-  // Extract required shipping parameters passed from the client frontend
-  const { shippingAddress } = req.body;
+const restoreStock = (items) =>
+  Promise.all(items.map((i) => Product.updateOne({ _id: i.product }, { $inc: { stock: i.quantity } })));
 
-  if (!shippingAddress || !shippingAddress.fullName || !shippingAddress.phone || !shippingAddress.address || !shippingAddress.city) {
-    throw new ApiError(400, 'Complete shipping address parameters (fullName, phone, address, city) are mandatory.');
-  }
-
-  // Fetch user cart space containing populated product definitions
+export const createOrder = asyncHandler(async (req, res) => {
   const cart = await Cart.findOne({ user: req.user._id }).populate('items.product');
-  
-  if (!cart || cart.items.length === 0) {
-    throw new ApiError(400, 'Your shopping cart is completely empty. Add items before placing an order.');
-  }
+  const lines = (cart ? cart.items : []).filter((i) => i.product);
+  if (!lines.length) throw new ApiError(400, 'Your cart is empty');
 
-  const orderItems = [];
-  let orderTotal = 0;
+  // snapshot: copy name and price now, so later changes to the product do not change this order
+  const items = lines.map((i) => ({
+    product: i.product._id,
+    name: i.product.name,
+    price: i.product.price,
+    quantity: i.quantity,
+  }));
+  const total = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
 
-  // Loop and map items using the structural naming parameters
-  for (const item of cart.items) {
-    const product = item.product;
-
-    if (!product) {
-      throw new ApiError(404, 'One or more products in your cart are no longer available in our store.');
+  // reserve stock one product at a time; the "stock >= quantity" condition stops overselling
+  const reserved = [];
+  let order;
+  try {
+    for (const item of items) {
+      const result = await Product.updateOne(
+        { _id: item.product, stock: { $gte: item.quantity } },
+        { $inc: { stock: -item.quantity } }
+      );
+      if (result.modifiedCount === 0) throw new ApiError(400, `Not enough stock for ${item.name}`);
+      reserved.push(item);
     }
-
-    // Stock check tracking against product.stock parameter
-    if (product.stock < item.quantity) {
-      throw new ApiError(400, `Stock mismatch! "${product.name}" has only ${product.stock} units left, but you requested ${item.quantity}.`);
-    }
-
-    orderItems.push({
-      product: product._id,
-      name: product.name, // Synchronized to match model's inner layout tracking
-      price: product.price,
-      quantity: item.quantity
-    });
-
-    orderTotal += product.price * item.quantity;
+    order = await Order.create({ user: req.user._id, items, shippingAddress: req.body.shippingAddress, total });
+  } catch (err) {
+    await restoreStock(reserved); // undo any stock already taken
+    throw err;
   }
 
-  // 3. Executing atomic inventory operations
-  for (const item of cart.items) {
-    await Product.findByIdAndUpdate(
-      item.product._id,
-      { $inc: { stock: -item.quantity } },
-      { runValidators: true }
-    );
-  }
-
-  // 4. allocating customer checkout record mapping to the appropriate property fields
-  const order = await Order.create({
-    user: req.user._id,
-    items: orderItems,
-    shippingAddress, // Appended required shipping variables 
-    total: orderTotal, // Synchronized to map 'total' key field name
-    status: 'pending' // Maps to the clean enum configuration
-  });
-
-  // 5. Reset client workspace environment items container
   cart.items = [];
   await cart.save();
-
-  res.status(201).json({
-    status: 'success',
-    message: 'Order created successfully and inventory allocations locked down.',
-    data: { order }
-  });
+  res.status(201).json({ success: true, order });
 });
 
-/**
- * @desc    Fetch purchasing history portfolios for the logged-in client
- * @route   GET /api/v1/orders/my-orders
- * @access  Private (Customer Only)
- */
-export const getMyOrders = asyncHandler(async (req, res, next) => {
-  const orders = await Order.find({ user: req.user._id }).sort('-createdAt');
+export const myOrders = asyncHandler(async (req, res) => {
+  const { page, limit, skip } = parsePagination(req.query, 10);
+  const filter = { user: req.user._id };
+  const [orders, total] = await Promise.all([
+    Order.find(filter).sort('-createdAt').skip(skip).limit(limit),
+    Order.countDocuments(filter),
+  ]);
+  res.json({ success: true, ...pageMeta(total, page, limit), orders });
+});
 
-  res.status(200).json({
-    status: 'success',
-    results: orders.length,
-    data: { orders }
-  });
+export const getOrder = asyncHandler(async (req, res) => {
+  const order = await Order.findById(req.params.id).populate('user', 'name email');
+  if (!order) throw new ApiError(404, 'Order not found');
+  const ownerId = order.user._id.toString();
+  if (req.user.role !== 'admin' && ownerId !== req.user._id.toString()) throw new ApiError(403, 'This is not your order');
+  res.json({ success: true, order });
+});
+
+export const allOrders = asyncHandler(async (req, res) => {
+  const { page, limit, skip } = parsePagination(req.query, 20);
+  const filter = req.query.status ? { status: String(req.query.status) } : {};
+  const [orders, total] = await Promise.all([
+    Order.find(filter).populate('user', 'name email').sort('-createdAt').skip(skip).limit(limit),
+    Order.countDocuments(filter),
+  ]);
+  res.json({ success: true, ...pageMeta(total, page, limit), orders });
+});
+
+export const updateStatus = asyncHandler(async (req, res) => {
+  const order = await Order.findById(req.params.id);
+  if (!order) throw new ApiError(404, 'Order not found');
+  const { status } = req.body;
+  if (!NEXT[order.status].includes(status)) {
+    throw new ApiError(400, `An order that is ${order.status} cannot be changed to ${status}`);
+  }
+  if (status === 'cancelled') await restoreStock(order.items);
+  order.status = status;
+  await order.save();
+  res.json({ success: true, order });
+});
+
+// A customer may cancel their own order only while it is still unpaid
+export const cancelOrder = asyncHandler(async (req, res) => {
+  const order = await Order.findOne({ _id: req.params.id, user: req.user._id });
+  if (!order) throw new ApiError(404, 'Order not found');
+  if (order.status !== 'pending') throw new ApiError(400, 'Only unpaid orders can be cancelled');
+  await restoreStock(order.items);
+  order.status = 'cancelled';
+  await order.save();
+  res.json({ success: true, order });
 });
