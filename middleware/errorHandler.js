@@ -1,40 +1,37 @@
+// ShopCore API | middleware/errorHandler.js
+// Role: central error handler. Every error becomes { success: false, message } with the right status.
+// Owner: Abe Enoch (AB1)
 const errorHandler = (err, req, res, next) => {
-  let statusCode = err.statusCode || 500;
-  let message = err.message || 'Internal Server Error';
-  let errors = err.errors;
+  let status = err.statusCode || err.status || 500;
+  let message = err.message || 'Server error';
 
-  if (err.name === 'ValidationError' && err.errors && !Array.isArray(err.errors)) {
-    // Mongoose validation error
-    statusCode = 400;
-    message = 'Validation failed';
-    errors = Object.values(err.errors).map((e) => ({ field: e.path, message: e.message }));
-  } else if (err.name === 'CastError') {
-    statusCode = 400;
-    message = `Invalid ${err.path}: ${err.value}`;
+  if (err.name === 'ValidationError') {
+    status = 400;
+    message = Object.values(err.errors).map((e) => e.message).join(', ');
   } else if (err.code === 11000) {
-    statusCode = 409;
-    const field = Object.keys(err.keyValue || {})[0] || 'field';
-    message = `${field} already exists`;
+    status = 409;
+    message = `${Object.keys(err.keyValue || {}).join(', ')} already exists`;
+  } else if (err.name === 'CastError') {
+    status = 400;
+    message = `Invalid ${err.path}`;
   } else if (err.name === 'JsonWebTokenError' || err.name === 'TokenExpiredError') {
-    statusCode = 401;
+    status = 401;
     message = 'Invalid or expired token';
   } else if (err.name === 'MulterError') {
-    statusCode = 400;
+    status = 400;
+    message = err.code === 'LIMIT_FILE_SIZE' ? 'Image is too large (maximum 5 MB)' : err.message;
   } else if (err.type === 'entity.parse.failed') {
-    statusCode = 400;
-    message = 'Invalid JSON in request body';
+    status = 400;
+    message = 'Invalid JSON in the request body';
   }
 
-  // Don't leak internals on unexpected server errors in production
-  if (statusCode === 500 && process.env.NODE_ENV === 'production') {
-    message = 'Something went wrong';
-  }
-
-  const body = { status: 'error', message };
-  if (errors && errors.length) body.errors = errors;
-  if (process.env.NODE_ENV !== 'production') body.stack = err.stack;
-
-  res.status(statusCode).json(body);
+  if (status >= 500) console.error(err); // only real server faults are logged
+  const production = process.env.NODE_ENV === 'production';
+  res.status(status).json({
+    success: false,
+    message: status >= 500 && production ? 'Server error' : message,
+    ...(!production && status >= 500 && { stack: err.stack }),
+  });
 };
 
 export default errorHandler;
