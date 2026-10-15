@@ -5,6 +5,11 @@ import cors from 'cors';
 import { apiLimiter } from './middleware/rateLimiter.js';
 import notFound from './middleware/notFound.js';
 import errorHandler from './middleware/errorHandler.js';
+
+import fs from 'node:fs';
+import swaggerUi from 'swagger-ui-express';
+
+
 // CREATE: makes our application object. "app" is the ShopCore API itself
 const app = express();
 app.set('trust proxy', 1);
@@ -23,5 +28,7 @@ app.get('/api/v1/health', (req, res) => {
   res.json({ status: 'ok', name: 'ShopCore API' });
 }); // end of the health route
 
+const openapi = JSON.parse(fs.readFileSync(new URL('./docs/openapi.json', import.meta.url), 'utf8'));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(openapi));
 // EXPORT: shares "app" with other files, so index.js can start it (and tests can use it)
 export default app;
