@@ -12,16 +12,10 @@ import sanitize from './middleware/sanitize.js';
 import { apiLimiter } from './middleware/rateLimiter.js';
 import notFound from './middleware/notFound.js';
 import errorHandler from './middleware/errorHandler.js';
-import { paymentWebhook } from './controllers/paymentController.js';
-import authRoutes from './routes/authRoutes.js';
-import userRoutes from './routes/userRoutes.js';
-import categoryRoutes from './routes/categoryRoutes.js';
-import productRoutes from './routes/productRoutes.js';
-import cartRoutes from './routes/cartRoutes.js';
-import orderRoutes from './routes/orderRoutes.js';
-import paymentRoutes from './routes/paymentRoutes.js';
-import reviewRoutes from './routes/reviewRoutes.js';
-import adminRoutes from './routes/adminRoutes.js';
+
+import fs from 'node:fs';
+import swaggerUi from 'swagger-ui-express';
+
 
 // CREATE: makes our application object. "app" is the ShopCore API itself
 const app = express();
@@ -68,5 +62,7 @@ app.use('/api/v1/admin', adminRoutes);
 app.use(notFound); // unknown route -> 404
 app.use(errorHandler); // every error ends up here
 
+const openapi = JSON.parse(fs.readFileSync(new URL('./docs/openapi.json', import.meta.url), 'utf8'));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(openapi));
 // EXPORT: shares "app" with other files, so index.js can start it (and tests can use it)
 export default app;

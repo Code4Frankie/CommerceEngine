@@ -1,33 +1,31 @@
-// ShopCore API | index.js
-// Role: starts the server. Loads .env, connects to MongoDB, then listens on the port.
-// Owner: Ahile Shagba Francis (AH3)
-
-// Must be the first import so .env is loaded before any other file reads process.env
+// IMPORT: loads variables from the .env file into process.env (must come first)
 import 'dotenv/config';
+// IMPORT: Mongoose is the library that talks to MongoDB
+import mongoose from 'mongoose';
+// IMPORT: brings in the app we built and exported in app.js
 import app from './app.js';
-import connectDB from './config/db.js';
+import dns from 'node:dns';
+if (process.env.DNS_SERVERS) {
+  dns.setServers(process.env.DNS_SERVERS.split(','));
+}
+// PORT: the door the server listens on. Uses the PORT from the environment (Render sets one), otherwise 5001
+const PORT = process.env.PORT || 5001;
 
-const PORT = process.env.PORT || 5000;
+// START: connect to the database first, then begin listening for requests
+async function start() {
+  try {
+    // CONNECT: opens the connection using the connection string stored in .env
+    await mongoose.connect(process.env.MONGODB_URI);
+    console.log('MongoDB connected');
 
-const start = async () => {
-  await connectDB(); // do not accept requests until the database is connected
-  // Express 5 passes a startup error (for example "port already in use") to this callback
-  app.listen(PORT, (err) => {
-    if (err) {
-      console.error(`Could not start on port ${PORT}: ${err.message}`);
-      process.exit(1);
-    }
-    console.log(`ShopCore API running on http://localhost:${PORT}`);
-  });
-};
+    app.listen(PORT, () => {
+      console.log(`ShopCore API running on http://localhost:${PORT}`);
+    });
+  } catch (err) {
+    // FAIL: if the DB can't be reached, show why and stop instead of running half-broken
+    console.error('Failed to start server:', err.message);
+    process.exit(1);
+  }
+}
 
-start().catch((err) => {
-  console.error('Startup failed:', err.message);
-  process.exit(1); // exit so Render or nodemon shows the failure clearly
-});
-
-// Last safety nets: log and stop instead of leaving the process in an unknown state
-process.on('unhandledRejection', (err) => {
-  console.error('Unhandled rejection:', err);
-  process.exit(1);
-});
+start();
