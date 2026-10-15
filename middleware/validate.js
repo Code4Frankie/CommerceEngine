@@ -1,15 +1,12 @@
-// ShopCore API | middleware/validate.js
-// Role: turns express-validator results into one clear 400 error. idParam checks :id is a valid MongoDB id.
-// Owner: Abe Enoch (AB1)
-import { validationResult, param } from 'express-validator';
+import { validationResult } from 'express-validator';
 import ApiError from '../utils/ApiError.js';
 
-export const validate = (req, res, next) => {
-  const errors = validationResult(req);
-  if (errors.isEmpty()) return next();
-  return next(new ApiError(400, errors.array().map((e) => e.msg).join(', ')));
-};
+const validate = (req, res, next) => {
+  const result = validationResult(req);
+  if (result.isEmpty()) return next();
 
-export const idParam = param('id').isMongoId().withMessage('Invalid id');
+  const errors = result.array().map((e) => ({ field: e.path, message: e.msg }));
+  next(new ApiError(400, 'Validation failed', errors));
+};
 
 export default validate;

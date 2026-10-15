@@ -17,18 +17,29 @@
   },
   "license": "ISC",
   "dependencies": {
-    "bcryptjs": "^2.4.3",
-    "cloudinary": "^2.5.0",
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
-    "express": "^5.1.0",
-    "express-rate-limit": "^7.5.0",
-    "express-validator": "^7.2.0",
-    "helmet": "^8.0.0",
-    "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.9.0",
-    "morgan": "^1.10.0",
-    "multer": "^1.4.5-lts.1",
-    "nodemailer": "^6.9.15"
-  }
+    "bcryptjs": "^3.0.3",
+    "cloudinary": "^2.11.0",
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.6",
+    "express": "^5.3.0",
+    "express-rate-limit": "^8.7.1",
+    "express-validator": "^7.3.2",
+    "helmet": "^8.3.0",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.11.1",
+    "morgan": "^1.12.1",
+    "multer": "^2.4.0",
+    "nodemailer": "^10.0.16"
+  },
+  "directories": {
+    "test": "tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Code4Frankie/CommerceEngine.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Code4Frankie/CommerceEngine/issues"
+  },
+  "homepage": "https://github.com/Code4Frankie/CommerceEngine#readme"
 }

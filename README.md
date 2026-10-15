@@ -1,62 +1,86 @@
-### Orders
+# ShopCore API
 
-Orders are created from the logged-in user's cart. Prices and totals are always calculated on the server from current product data, and stock is reserved when an order is placed.
+**The core engine behind online commerce.**
 
-All order endpoints require a JWT: `Authorization: Bearer <token>`.
+ShopCore API is a backend for e-commerce platforms that serve **local businesses, products and services**. It gives small vendors and local shops one place to list what they sell, and gives buyers a simple way to browse, order and pay.
 
-| Method | Endpoint | Access | Description |
-|--------|----------|--------|-------------|
-| POST | `/api/v1/orders` | User | Create an order from the cart |
-| GET | `/api/v1/orders/my` | User | List my orders (`page`, `limit`, `status`) |
-| GET | `/api/v1/orders/:id` | Owner / Admin | Get one order |
-| PATCH | `/api/v1/orders/:id/cancel` | Owner / Admin | Cancel an order and restore stock |
-| GET | `/api/v1/orders` | Admin | List all orders (`page`, `limit`, `status`, `paymentStatus`, `user`) |
-| PATCH | `/api/v1/orders/:id/status` | Admin | Update order status |
+## Features
 
-### Create order
+- Accounts and login with JWT, with customer, vendor and admin roles
+- Categories and products, with search, filtering and pagination
+- Image uploads to Cloudinary (Multer)
+- Shopping cart and orders
+- Online payments with a verified webhook
+- Product reviews and ratings
+- Admin tools for managing users, products and orders
+- Security built in: Helmet, CORS, rate limiting, input sanitising and validation
 
-`POST /api/v1/orders`
+## Tech Stack
 
-```json
-{
-  "shippingAddress": {
-    "fullName": "Lionel Messi",
-    "address": "12 Allen Avenue",
-    "city": "Ikeja",
-    "state": "Lagos",
-    "postalCode": "100271",
-    "country": "Nigeria",
-    "phone": "+2348012345678"
-  }
-}
-```
+Node.js · Express 5 · MongoDB (Mongoose) · Cloudinary and Multer · JWT · Postman · Render
 
-- `201` order created, cart cleared, stock reduced
-- `400` empty cart or validation error
-- `409` insufficient stock (nothing is changed)
-
-### Status flow
-
-```
-pending -> processing -> shipped -> delivered
-   \            \
-    +------------+--> cancelled
-```
-
-- Customers can cancel only while the order is `pending`.
-- Admins can cancel while `pending` or `processing`.
-- Cancelling restores product stock.
-- `delivered` and `cancelled` are final.
-
-### Config
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `SHIPPING_FEE` | `0` | Flat shipping fee added to every order (NGN) |
-
-### Running the order tests
+## Getting Started
 
 ```bash
-npm i -D jest supertest mongodb-memory-server
-NODE_OPTIONS=--experimental-vm-modules npx jest tests/order.test.js
+git clone https://github.com/Code4Frankie/CommerceEngine.git
+cd CommerceEngine
+npm install
+cp .env.example .env     # then fill in your own values
+npm run dev
 ```
+
+Required in `.env`: `MONGO_URI` and `JWT_SECRET`. Everything else is listed in `.env.example`. **Never commit `.env`.**
+
+Check it is running:
+
+```bash
+curl http://localhost:5000/api/v1/health
+```
+
+Use the port from your `.env` if you changed `PORT`.
+
+## API Overview
+
+Base path: `/api/v1`
+
+| Area | Path |
+| --- | --- |
+| Health | `/health` |
+| Auth and users | `/auth`, `/users` |
+| Categories and products | `/categories`, `/products` |
+| Cart and orders | `/cart`, `/orders` |
+| Payments | `/payments` |
+| Reviews | `/reviews` |
+| Admin | `/admin` |
+
+A ready-made Postman collection and environments are in the `postman/` folder.
+
+## Project Structure
+
+```
+config/  controllers/  models/  routes/  middleware/
+services/  validators/  utils/  scripts/  tests/  postman/
+```
+
+## Team Workflow
+
+Branch from `develop`, open a pull request into `develop`, and merge `develop` into `main` after each day's work. Never push straight to `main`.
+
+## Backend Team (Team E-commerce | local products and businesses)
+
+| # | Member | Role |
+| --- | --- | --- |
+| 1 | Ahile Shagba Francis | Group Leader, Project Lead, Repo Owner. Project setup and infrastructure, app core and routes, final integration and wrap-up. |
+| 2 | Aziz Olaide Kafayat | Assistant Lead, Database and QA, Docs and Deployment |
+| 3 | Anthony Edike | Records, Orders |
+| 4 | Ogunsola Israel Oluwajomiloju | Auth and Users |
+| 5 | Ojelade Esther Omotoyosi | Products and Categories |
+| 6 | Nge Chioma Rejoice | Media Uploads |
+| 7 | Tunde Fadipe | Cart |
+| 8 | Stephanie Daniels | Payments |
+| 9 | Oyelekan Oluseye | Reviews and Admin |
+| 10 | Abe Enoch | Security and Middleware |
+
+## License
+
+For learning and team project use. Add a license before public release.
