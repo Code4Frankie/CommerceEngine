@@ -23,6 +23,7 @@ import paymentRoutes from './routes/paymentRoutes.js';
 import reviewRoutes from './routes/reviewRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 
+// CREATE: makes our application object. "app" is the ShopCore API itself
 const app = express();
 
 app.set('trust proxy', 1); // Render sits behind a proxy; needed for correct IPs in rate limiting
@@ -67,4 +68,5 @@ app.use('/api/v1/admin', adminRoutes);
 app.use(notFound); // unknown route -> 404
 app.use(errorHandler); // every error ends up here
 
+// EXPORT: shares "app" with other files, so index.js can start it (and tests can use it)
 export default app;
