@@ -1,16 +1,42 @@
-import express from 'express';
-import { createOrder, getMyOrders } from '../controllers/orderController.js';
-import { protect } from '../middleware/auth.js'; // 🟢 Clean default import matching your file!
+import express from "express";
+import {
+  createOrder,
+  getMyOrders,
+  getOrderById,
+  cancelOrder,
+  getAllOrders,
+  updateOrderStatus,
+} from "../controllers/orderController.js";
+import {
+  validate,
+  createOrderRules,
+  orderIdRules,
+  updateStatusRules,
+  listOrdersRules,
+} from "../validators/orderValidator.js";
+import { protect, restrictTo } from "../middleware/auth.js";
 
 const router = express.Router();
 
-// Enforce strict account protection shield across all purchase processing pipelines
-router.use(protect);
+// Customer
+router.post("/", protect, createOrderRules, validate, createOrder);
+router.get("/my", protect, listOrdersRules, validate, getMyOrders);
 
-router.route('/')
-  .post(createOrder); // POST /api/v1/orders -> Checkout cart
+// Admin: static paths must come before "/:id")
+router.get("/", protect, restrictTo("admin"), listOrdersRules, validate, getAllOrders);
 
-router.route('/my-orders')
-  .get(getMyOrders);  // GET /api/v1/orders/my-orders -> View personal purchase history
+// Owner or admin 
+router.get("/:id", protect, orderIdRules, validate, getOrderById);
+router.patch("/:id/cancel", protect, orderIdRules, validate, cancelOrder);
+
+// Admin
+router.patch(
+  "/:id/status",
+  protect,
+  restrictTo("admin"),
+  updateStatusRules,
+  validate,
+  updateOrderStatus
+);
 
 export default router;
