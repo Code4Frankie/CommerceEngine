@@ -1,20 +1,18 @@
-import express from 'express';
-import { getCart, addToCart, updateCartQuantity, removeFromCart, clearCart } from '../controllers/cartController.js';
-import { protect } from '../middleware/auth.js'; // 🟢 Clean default import matching your file!
-import { addToCartValidator, updateQuantityValidator } from '../validators/cartValidator.js';
+// ShopCore API | routes/cartRoutes.js
+// Role: /api/v1/cart. All routes need a login.
+// Owner: Tunde Fadipe (TU3)
+import { Router } from 'express';
+import { getCart, addItem, updateItem, removeItem, clearCart } from '../controllers/cartController.js';
+import { addItemRules, updateItemRules, productIdParam } from '../validators/cartValidator.js';
+import { validate } from '../middleware/validate.js';
+import { protect } from '../middleware/auth.js';
 
-const router = express.Router();
-
-// Enforce token authentication checks globally across all cart execution entry links
+const router = Router();
 router.use(protect);
-
-router.route('/')
-  .get(getCart)       // GET    /api/v1/cart -> View Cart
-  .post(addToCartValidator, addToCart)     // POST   /api/v1/cart -> Add Item
-  .delete(clearCart); // DELETE /api/v1/cart -> Empty Cart
-
-router.route('/:productId')
-.put(updateQuantityValidator, updateCartQuantity)  // PUT    /api/v1/cart/:productId -> Adjust Quantity
-  .delete(removeFromCart);   // DELETE /api/v1/cart/:productId -> Drop Single Item
+router.get('/', getCart);
+router.post('/items', addItemRules, validate, addItem);
+router.put('/items/:productId', updateItemRules, validate, updateItem);
+router.delete('/items/:productId', productIdParam, validate, removeItem);
+router.delete('/', clearCart);
 
 export default router;

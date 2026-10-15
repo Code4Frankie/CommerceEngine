@@ -1,3 +1,6 @@
+// ShopCore API | models/productModel.js
+// Role: Product schema. Images live on Cloudinary; we keep the url and publicId.
+// Owner: Aziz Olaide Kafayat (AZ1)
 import mongoose from 'mongoose';
 
 const productSchema = new mongoose.Schema(

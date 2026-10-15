@@ -1,6 +1,6 @@
 // ShopCore API | controllers/paymentController.js
 // Role: starts a payment for an order, handles the gateway webhook, and a verify fallback.
-//  Stephanie Daniels (ST3)
+// Owner: Stephanie Daniels (ST3)
 import crypto from 'node:crypto';
 import Order from '../models/orderModel.js';
 import Payment from '../models/paymentModel.js';

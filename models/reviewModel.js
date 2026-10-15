@@ -1,34 +1,18 @@
-import mongoose from "mongoose";
+// ShopCore API | models/reviewModel.js
+// Role: Review schema. One review per user per product.
+// Owner: Aziz Olaide Kafayat (AZ1)
+import mongoose from 'mongoose';
 
 const reviewSchema = new mongoose.Schema(
   {
-    user: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-    product: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Product",
-      required: true,
-      index: true,
-    },
-    rating: {
-      type: Number,
-      required: true,
-      min: 1,
-      max: 5,
-      validate: {
-        validator: Number.isInteger,
-        message: "Rating must be a whole number",
-      },
-    },
-    title: { type: String, trim: true, maxlength: 150 },
-    comment: { type: String, required: true, trim: true, maxlength: 2000 },
+    product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    rating: { type: Number, required: [true, 'Rating is required'], min: 1, max: 5 },
+    comment: { type: String, trim: true },
   },
   { timestamps: true }
 );
 
-reviewSchema.index({ user: 1, product: 1 }, { unique: true });
+reviewSchema.index({ product: 1, user: 1 }, { unique: true });
 
-export default mongoose.model("Review", reviewSchema);
+export default mongoose.model('Review', reviewSchema);

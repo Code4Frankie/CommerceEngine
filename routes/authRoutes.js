@@ -1,11 +1,17 @@
-import express from 'express';
+// ShopCore API | routes/authRoutes.js
+// Role: /api/v1/auth: register, login, forgot and reset password.
+// Owner: Ogunsola Israel Oluwajomiloju (OG2, OG3)
+import { Router } from 'express';
 import { register, login } from '../controllers/authController.js';
-import { registerValidator, loginValidator, validateRequest } from '../validators/authValidator.js';
+import { forgotPassword, resetPassword } from '../controllers/userController.js';
+import { registerRules, loginRules, forgotPasswordRules, resetPasswordRules } from '../validators/authValidator.js';
+import { validate } from '../middleware/validate.js';
+import { authLimiter } from '../middleware/rateLimiter.js';
 
-const router = express.Router();
-
-// Comma-separated arguments to process data through checkpoints
-router.post('/register', registerValidator, validateRequest, register);
-router.post('/login', loginValidator, validateRequest, login);
+const router = Router();
+router.post('/register', authLimiter, registerRules, validate, register);
+router.post('/login', authLimiter, loginRules, validate, login);
+router.post('/forgot-password', authLimiter, forgotPasswordRules, validate, forgotPassword);
+router.post('/reset-password/:token', authLimiter, resetPasswordRules, validate, resetPassword);
 
 export default router;

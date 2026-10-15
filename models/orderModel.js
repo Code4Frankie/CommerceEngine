@@ -1,3 +1,6 @@
+// ShopCore API | models/orderModel.js
+// Role: Order schema. Item names and prices are copied (snapshot) so later price changes do not alter old orders.
+// Owner: Aziz Olaide Kafayat (AZ1)
 import mongoose from 'mongoose';
 
 const orderSchema = new mongoose.Schema(
