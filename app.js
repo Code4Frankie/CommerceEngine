@@ -38,10 +38,11 @@ app.use(helmet()); // safe default security headers
 // Requests with no origin (Postman, curl, server to server) are allowed.
 const origins = (process.env.CLIENT_URLS || 'http://localhost:5173').split(',').map((s) => s.trim());
 app.use(
-  cors({
-    origin: (origin, cb) =>
-      !origin || origins.includes(origin) ? cb(null, true) : cb(new ApiError(403, 'Origin not allowed by CORS')),
-    credentials: true,
+  cors((req, cb) => {
+    const origin = req.header('Origin');
+    const sameOrigin = origin && origin === `${req.protocol}://${req.get('host')}`;
+    if (!origin || sameOrigin || origins.includes(origin)) return cb(null, { origin: true, credentials: true });
+    return cb(new ApiError(403, 'Origin not allowed by CORS'));
   })
 );
 
